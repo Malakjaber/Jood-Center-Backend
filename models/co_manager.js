@@ -1,8 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
   const co_manager = sequelize.define("co_manager", {
     id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
+      type: DataTypes.STRING(100),
       primaryKey: true,
     },
     username: {

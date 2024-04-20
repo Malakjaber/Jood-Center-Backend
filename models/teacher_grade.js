@@ -1,7 +1,10 @@
 module.exports = (sequelize, DataTypes) => {
   const teacher_grade = sequelize.define("teacher_grade", {
+    // id:{
+
+    // },
     teacher_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING(100),
       allowNull: false,
       primaryKey: true,
     },
@@ -10,10 +13,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       primaryKey: true,
     },
-    term: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-    },
+    // term: {
+    //   type: DataTypes.STRING(50),
+    //   allowNull: false,
+    // },
   });
 
   teacher_grade.associate = function (models) {
