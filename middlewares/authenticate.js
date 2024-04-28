@@ -1,4 +1,4 @@
-const { sessions } = require("../models");
+const { session } = require("../models");
 
 const authenticate = async (req, res, next) => {
   try {
@@ -10,11 +10,11 @@ const authenticate = async (req, res, next) => {
         .json({ error: "Unauthorized - Session ID not provided" });
     }
 
-    const session = await sessions.findOne({
+    const oldSession = await session.findOne({
       where: { sid: sessionId },
     });
 
-    if (!session) {
+    if (!oldSession) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 

@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATEONLY,
       allowNull: false,
     },
-    case: {
+    pathological_case: {
       type: DataTypes.STRING(50),
       allowNull: false,
     },
@@ -34,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     parent_id: {
       type: DataTypes.STRING(100),
-      allowNull: false,
+      allowNull: true,
     },
   });
 
