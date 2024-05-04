@@ -1,6 +1,4 @@
-const { where } = require("sequelize");
-const { student, parent, grade } = require("../models");
-const { v4: uuidv4 } = require("uuid");
+const { student, parent } = require("../models");
 
 const getAllStudents = async (req, res) => {
   try {
@@ -37,7 +35,25 @@ const getAllStudents = async (req, res) => {
     return res.sendStatus(500);
   }
 };
-const getStudentById = (req, res) => {};
+const getStudentById = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    if (Number.isNaN(id)) {
+      return res.status(400);
+    }
+
+    let userProfile = await student.findByPk(id);
+
+    if (!userProfile) {
+      return res.status(400).json({ error: "Student not found" });
+    }
+
+    return res.status(200).json({ message: "success", user: userProfile });
+  } catch (error) {
+    return res.status(500);
+  }
+};
 const addNewStudent = async (req, res) => {
   try {
     const {
@@ -49,6 +65,7 @@ const addNewStudent = async (req, res) => {
       address,
       medicines,
       parent_email,
+      class_id,
     } = req.body;
 
     if (await student.findByPk(st_id)) {
@@ -69,7 +86,7 @@ const addNewStudent = async (req, res) => {
       phone,
       address,
       medicines,
-      grade_id: "2",
+      class_id,
       parent_id: st_parent ? st_parent.parent_id : null,
     });
 
@@ -82,7 +99,22 @@ const addNewStudent = async (req, res) => {
     return res.sendStatus(500);
   }
 };
-const removeStudent = (req, res) => {};
+const removeStudent = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const deletedStudent = await student.destroy({
+      where: { st_id: id },
+    });
+    if (deletedStudent === 0) {
+      return res.status(404).json({ error: "Student ID not found" });
+    }
+    res.json({ message: "success" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 
 module.exports = {
   getAllStudents,

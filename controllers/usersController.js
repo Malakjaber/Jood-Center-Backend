@@ -159,16 +159,16 @@ const signUp = async (req, res) => {
         break;
     }
 
-    const sessinId = uuidv4();
+    const sessionId = uuidv4();
     await session.create({
-      sid: sessinId,
+      sid: sessionId,
       userId: newUserId,
     });
 
     res.json({
       message: "success",
       newUser,
-      sessinId,
+      sessionId,
     });
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error " + error });
@@ -188,7 +188,6 @@ const signIn = async (req, res) => {
         user = await parent.findOne(checkConstraints);
         break;
       case "teacher":
-        console.log("yessssssssssssssss");
         user = await teacher.findOne(checkConstraints);
         break;
       case "co_manager":
@@ -198,10 +197,9 @@ const signIn = async (req, res) => {
         user = await manager.findOne(checkConstraints);
         break;
       default:
-        res.status(400).json({ error: "Bad request" });
+        res.status(400).json({ error: "Role is missing" });
         break;
     }
-    console.log(user);
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: "Invalid Email or Password" });
     }
@@ -219,9 +217,11 @@ const signIn = async (req, res) => {
       username: user.username,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+      sessionId,
+      role,
     };
 
-    res.json({ message: "success", userdata, sessionId });
+    res.json({ message: "success", userdata });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });

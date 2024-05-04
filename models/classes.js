@@ -1,8 +1,8 @@
 module.exports = (sequelize, DataTypes) => {
-  const grade = sequelize.define(
-    "grade",
+  const classes = sequelize.define(
+    "class",
     {
-      grade_id: {
+      class_id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
@@ -17,10 +17,10 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  grade.associate = function (models) {
-    grade.hasMany(models.report, { foreignKey: "grade_id" });
-    grade.hasMany(models.student, { foreignKey: "grade_id" });
+  classes.associate = function (models) {
+    classes.hasMany(models.report, { foreignKey: "class_id" });
+    classes.hasMany(models.student, { foreignKey: "class_id" });
   };
 
-  return grade;
+  return classes;
 };

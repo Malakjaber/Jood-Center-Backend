@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-  const teacher_grade = sequelize.define("teacher_grade", {
+  const teacher_class = sequelize.define("teacher_class", {
     // id:{
 
     // },
@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       primaryKey: true,
     },
-    grade_id: {
+    class_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true,
@@ -19,10 +19,10 @@ module.exports = (sequelize, DataTypes) => {
     // },
   });
 
-  teacher_grade.associate = function (models) {
-    teacher_grade.belongsTo(models.teacher, { foreignKey: "teacher_id" });
-    teacher_grade.belongsTo(models.grade, { foreignKey: "grade_id" });
+  teacher_class.associate = function (models) {
+    teacher_class.belongsTo(models.teacher, { foreignKey: "teacher_id" });
+    teacher_class.belongsTo(models.class, { foreignKey: "class_id" });
   };
 
-  return teacher_grade;
+  return teacher_class;
 };

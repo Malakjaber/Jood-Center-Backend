@@ -1,8 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
   const student = sequelize.define("student", {
     st_id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
+      type: DataTypes.STRING(15),
       primaryKey: true,
     },
     name: {
@@ -28,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: false,
     },
-    grade_id: {
+    class_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
@@ -39,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   student.associate = function (models) {
-    student.belongsTo(models.grade, { foreignKey: "grade_id" });
+    student.belongsTo(models.class, { foreignKey: "class_id" });
     student.belongsTo(models.parent, { foreignKey: "parent_id" });
     student.hasMany(models.treatment_plan, { foreignKey: "st_id" });
   };

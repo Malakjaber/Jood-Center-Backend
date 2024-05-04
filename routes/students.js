@@ -9,7 +9,7 @@ const {
 
 router.get("/", getAllStudents);
 router.get("/:id", getStudentById);
-router.post("/add", addNewStudent);
-router.delete("/remove/:id", removeStudent);
+router.post("/", addNewStudent);
+router.delete("/:id", removeStudent);
 
 module.exports = router;
