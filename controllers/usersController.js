@@ -111,7 +111,12 @@ const getUserById = async (req, res) => {
 
 const signUp = async (req, res) => {
   try {
-    const { username, email, password, role } = req.body;
+    const { username, id, email, password, role } = req.body;
+
+    if (!id && role === "parent") {
+      return res.status(400).json({ error: "Parent ID is required" });
+    }
+
     if (
       (await parent.findOne({ where: { email } })) ||
       (await teacher.findOne({ where: { email } })) ||
@@ -132,7 +137,7 @@ const signUp = async (req, res) => {
     switch (role) {
       case "parent":
         newUser = await parent.create({
-          parent_id: newUserId,
+          parent_id: id,
           ...userData,
         });
         break;

@@ -1,4 +1,4 @@
-const { student, parent } = require("../models");
+const { student } = require("../models");
 
 const getAllStudents = async (req, res) => {
   try {
@@ -64,19 +64,17 @@ const addNewStudent = async (req, res) => {
       phone,
       address,
       medicines,
-      parent_email,
+      parent_id,
       class_id,
     } = req.body;
+
+    if (!st_id) {
+      return res.status(400).json({ error: "Student Id not provided" });
+    }
 
     if (await student.findByPk(st_id)) {
       return res.status(400).json({ error: "Student Added Before" });
     }
-
-    const st_parent = await parent.findOne({
-      where: {
-        email: parent_email,
-      },
-    });
 
     const newStudent = await student.create({
       st_id,
@@ -87,7 +85,7 @@ const addNewStudent = async (req, res) => {
       address,
       medicines,
       class_id,
-      parent_id: st_parent ? st_parent.parent_id : null,
+      parent_id
     });
 
     res.json({
