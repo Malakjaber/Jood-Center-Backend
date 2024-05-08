@@ -6,6 +6,8 @@ const usersRoutes = require("./routes/users.js");
 const studentsRoutes = require("./routes/students.js");
 const classesRoutes = require("./routes/classes.js");
 const reportsRoutes = require("./routes/reports.js");
+const teacherClassRoutes = require("./routes/teacher-class.js");
+const fakerRoutes = require("./routes/faker.js");
 
 const PORT = process.env.PORT;
 const app = express();
@@ -19,6 +21,8 @@ app.use("/users", usersRoutes);
 app.use("/students", studentsRoutes);
 app.use("/classes", classesRoutes);
 app.use("/reports", reportsRoutes);
+app.use("/teacher-class", teacherClassRoutes);
+app.use("/fake", fakerRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello from the server!");

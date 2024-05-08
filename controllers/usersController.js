@@ -180,48 +180,103 @@ const signUp = async (req, res) => {
   }
 };
 
+// const signIn = async (req, res) => {
+//   try {
+//     const { email, password, role } = req.body;
+
+//     let user = {};
+//     const checkConstraints = {
+//       where: { email },
+//     };
+//     switch (role) {
+//       case "parent":
+//         user = await parent.findOne(checkConstraints);
+//         user.id = user.parent_id;
+//         break;
+//       case "teacher":
+//         user = await teacher.findOne(checkConstraints);
+//         user.id = user.teacher_id;
+//         break;
+//       case "co_manager":
+//         user = await co_manager.findOne(checkConstraints);
+//         break;
+//       case "manager":
+//         user = await manager.findOne(checkConstraints);
+//         break;
+//       default:
+//         res.status(400).json({ error: "Role is missing" });
+//         break;
+//     }
+//     if (!user || !(await bcrypt.compare(password, user.password))) {
+//       return res.status(401).json({ error: "Invalid Email or Password" });
+//     }
+
+//     const sessionId = uuidv4();
+
+//     await session.create({
+//       sid: sessionId,
+//       userId: user.id,
+//     });
+
+//     const userdata = {
+//       userId: user.id,
+//       email: user.email,
+//       username: user.username,
+//       sessionId,
+//       role,
+//     };
+
+//     res.json({ message: "success", userdata });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
+
 const signIn = async (req, res) => {
   try {
-    const { email, password, role } = req.body;
+    const { email, password } = req.body;
+    const models = [parent, teacher, co_manager, manager];
+    let user = null;
+    let role = "";
 
-    let user = {};
-    const checkConstraints = {
-      where: { email },
-    };
-    switch (role) {
-      case "parent":
-        user = await parent.findOne(checkConstraints);
+    for (let model of models) {
+      user = await model.findOne({ where: { email } });
+      if (user) {
+        if (model === parent) {
+          user.id = user.parent_id;
+          role = "parent";
+        } else if (model === teacher) {
+          user.id = user.teacher_id;
+          role = "teacher";
+        } else if (model === co_manager) {
+          role = "co_manager";
+        } else if (model === manager) {
+          role = "manager";
+        }
         break;
-      case "teacher":
-        user = await teacher.findOne(checkConstraints);
-        break;
-      case "co_manager":
-        user = await co_manager.findOne(checkConstraints);
-        break;
-      case "manager":
-        user = await manager.findOne(checkConstraints);
-        break;
-      default:
-        res.status(400).json({ error: "Role is missing" });
-        break;
+      }
     }
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+
+    if (!user) {
+      return res.status(401).json({ error: "Invalid Email or Password" });
+    }
+
+    if (!(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: "Invalid Email or Password" });
     }
 
     const sessionId = uuidv4();
-
     await session.create({
       sid: sessionId,
       userId: user.id,
     });
 
+    // Prepare user data for response
     const userdata = {
       userId: user.id,
       email: user.email,
-      username: user.username,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
+      username: user.username, // Assuming all tables have a username field
       sessionId,
       role,
     };
