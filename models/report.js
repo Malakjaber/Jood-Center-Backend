@@ -15,8 +15,8 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DATEONLY,
         allowNull: false,
       },
-      class_id: {
-        type: DataTypes.INTEGER,
+      st_id: {
+        type: DataTypes.STRING(15),
         allowNull: false,
       },
       teacher_id: {
@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   report.associate = function (models) {
-    report.belongsTo(models.class, { foreignKey: "class_id" });
+    report.belongsTo(models.student, { foreignKey: "st_id" });
     report.belongsTo(models.teacher, { foreignKey: "teacher_id" });
   };
   return report;

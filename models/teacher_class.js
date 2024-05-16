@@ -1,23 +1,22 @@
 module.exports = (sequelize, DataTypes) => {
-  const teacher_class = sequelize.define("teacher_class", {
-    // id:{
-
-    // },
-    teacher_id: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-      primaryKey: true,
+  const teacher_class = sequelize.define(
+    "teacher_class",
+    {
+      teacher_id: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+        primaryKey: true,
+      },
+      class_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        primaryKey: true,
+      },
     },
-    class_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true,
-    },
-    // term: {
-    //   type: DataTypes.STRING(50),
-    //   allowNull: false,
-    // },
-  });
+    {
+      timestamps: false,
+    }
+  );
 
   teacher_class.associate = function (models) {
     teacher_class.belongsTo(models.teacher, { foreignKey: "teacher_id" });

@@ -40,7 +40,10 @@ module.exports = (sequelize, DataTypes) => {
   student.associate = function (models) {
     student.belongsTo(models.class, { foreignKey: "class_id" });
     student.belongsTo(models.parent, { foreignKey: "parent_id" });
-    student.hasMany(models.treatment_plan, { foreignKey: "st_id" });
+    student.hasMany(models.report, {
+      foreignKey: "st_id",
+      onDelete: "CASCADE",
+    });
   };
 
   return student;

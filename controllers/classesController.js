@@ -1,4 +1,6 @@
 const { class: classes } = require("../models");
+const { sequelize } = require("../models");
+const { models } = sequelize;
 
 const getAllClasses = async (req, res) => {
   try {
@@ -74,6 +76,55 @@ const addNewClass = async (req, res) => {
   }
 };
 
+async function getClassesInformation(req, res) {
+  try {
+    const classesInfo = await models.class.findAll({
+      include: [
+        {
+          model: models.student,
+          attributes: [], // No attributes needed from students, just the count
+          duplicating: false, // Avoid duplicating class entries due to multiple students
+        },
+        {
+          model: models.teacher_class,
+          attributes: [], // No attributes needed from teacher_class directly
+          include: [
+            {
+              model: models.teacher,
+              attributes: ["username"], // Only need the teacher's username
+            },
+          ],
+        },
+      ],
+      attributes: [
+        "name", // Direct attribute from class
+        "class_id",
+        [
+          sequelize.fn("COUNT", sequelize.col("students.st_id")),
+          "studentCount",
+        ],
+      ],
+      group: [
+        "class.class_id",
+        "teacher_classes.teacher_id",
+        "teacher_classes->teacher.teacher_id",
+      ],
+      raw: true,
+      subQuery: false, // This might be necessary to handle limitations in grouping
+    });
+    const data = classesInfo.map((ci) => ({
+      class_id: ci["class_id"],
+      className: ci["name"],
+      studentCount: ci["studentCount"],
+      teacherName: ci["teacher_classes.teacher.username"],
+    }));
+    return res.status(200).json({ message: "success", data });
+  } catch (error) {
+    console.error("Error fetching class information:", error);
+    throw error;
+  }
+}
+
 const removeClass = async (req, res) => {
   try {
     const id = req.params.id;
@@ -95,5 +146,6 @@ module.exports = {
   getAllClasses,
   getClassById,
   addNewClass,
+  getClassesInformation,
   removeClass,
 };

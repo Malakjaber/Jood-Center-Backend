@@ -1,5 +1,5 @@
 const { faker } = require("@faker-js/faker");
-const { student, class: classes } = require("../models");
+const { sequelize } = require("../models");
 
 const generateRandomData = () => {
   const randomStudent = () => ({
@@ -13,14 +13,20 @@ const generateRandomData = () => {
     class_id: faker.number.int({ min: 1, max: 6 }),
     parent_id: "420059917",
   });
-  return { randomStudent };
+  const randomTeacher = () => ({
+    teacher_id: faker.helpers.replaceSymbols("##########"),
+    username: faker.person.fullName(),
+    email: faker.internet.email(),
+    password: faker.internet.password(),
+    // address: faker.lorem.words({ min: 3, max: 6 }),
+  });
+  return { randomStudent, randomTeacher };
 };
 
 const fillStudentsTable = async (req, res) => {
   const { randomStudent } = generateRandomData();
   for (let i = 0; i < 30; i++) {
-    console.log(randomStudent);
-    await student.create(randomStudent());
+    await sequelize.models.student.create(randomStudent());
     console.log("============> Iteration: " + i + " <=============");
   }
   res.json({ message: "success" });
@@ -36,10 +42,19 @@ const fillClassesTable = async (req, res) => {
     "Difficulty Of Speech (B)",
   ];
   for (let i = 0; i < 6; i++) {
-    await classes.create({ name: classesNames[i] });
+    await sequelize.models.class.create({ name: classesNames[i] });
     console.log("============> Iteration: " + i + " <=============");
   }
   res.json({ message: "success" });
 };
 
-module.exports = { fillStudentsTable, fillClassesTable };
+const fillTeachersTable = async (req, res) => {
+  const { randomTeacher } = generateRandomData();
+  for (let i = 0; i < 30; i++) {
+    await sequelize.models.teacher.create(randomTeacher());
+    console.log("============> Iteration: " + i + " <=============");
+  }
+  res.json({ message: "success" });
+};
+
+module.exports = { fillStudentsTable, fillTeachersTable, fillClassesTable };

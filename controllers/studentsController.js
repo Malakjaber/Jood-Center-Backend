@@ -1,4 +1,4 @@
-const { Op, where } = require("sequelize");
+const { Op } = require("sequelize");
 const { student } = require("../models");
 const { sequelize } = require("../models");
 
@@ -84,6 +84,10 @@ const addNewStudent = async (req, res) => {
       return res.status(400).json({ error: "Student Added Before" });
     }
 
+    if (!(await sequelize.models.parent.findByPk(parent_id))) {
+      return res.status(400).json({ error: "Parent Account Not Found" });
+    }
+
     const newStudent = await student.create({
       st_id,
       name,
@@ -105,6 +109,57 @@ const addNewStudent = async (req, res) => {
     return res.sendStatus(500);
   }
 };
+const editStudent = async (req, res) => {
+  const { id } = req.params;
+  const {
+    name,
+    birth_date,
+    pathological_case,
+    phone,
+    address,
+    medicines,
+    parent_id,
+    class_id,
+  } = req.body;
+  try {
+    // First, check if the student exists
+    const studentProfile = await student.findByPk(id);
+    if (!studentProfile) {
+      return res.status(404).json({ error: "Student Not Found" });
+    }
+
+    const parentProfile = await sequelize.models.parent.findByPk(parent_id);
+    if (!parentProfile) {
+      return res.status(404).json({ error: "Parent Account Not Found" });
+    }
+
+    const newClass = await sequelize.models.class.findByPk(class_id);
+    if (!newClass) {
+      return res.status(404).json({ error: "Class Doesn't Exists" });
+    }
+
+    // Update the student with new data
+    const updatedStudent = await studentProfile.update({
+      // ...(studentId && { st_id: studentId }),
+      ...(name && { name }),
+      ...(birth_date && { birth_date }),
+      ...(pathological_case && { pathological_case }),
+      ...(phone && { phone }),
+      ...(address && { address }),
+      ...(medicines && { medicines }),
+      ...(parent_id && { parent_id }),
+      ...(class_id && { class_id }),
+    });
+
+    return res.json({
+      message: "success",
+      student: updatedStudent,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 const removeStudent = async (req, res) => {
   try {
     const id = req.params.id;
@@ -113,15 +168,14 @@ const removeStudent = async (req, res) => {
       where: { st_id: id },
     });
     if (deletedStudent === 0) {
-      return res.status(404).json({ error: "Student ID not found" });
+      return res.status(404).json({ error: "Student Not Found" });
     }
-    res.json({ message: "success" });
+    res.json({ message: "success", st_id: id });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 const getStudentsByTeacher = async (req, res) => {
   try {
     const teacherId = req.params.teacherId;
@@ -185,4 +239,5 @@ module.exports = {
   addNewStudent,
   removeStudent,
   getStudentsByTeacher,
+  editStudent,
 };

@@ -3,7 +3,6 @@ const { session } = require("../models");
 const authenticate = async (req, res, next) => {
   try {
     const sessionId = req.headers.authorization;
-
     if (!sessionId) {
       return res
         .status(401)

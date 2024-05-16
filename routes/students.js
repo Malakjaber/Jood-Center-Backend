@@ -6,12 +6,15 @@ const {
   addNewStudent,
   removeStudent,
   getStudentsByTeacher,
+  editStudent,
 } = require("../controllers/studentsController");
+const authenticate = require("../middlewares/authenticate");
 
 router.get("/", getAllStudents);
 router.get("/:id", getStudentById);
-router.post("/", addNewStudent);
-router.delete("/:id", removeStudent);
+router.put("/", authenticate, addNewStudent);
+router.put("/:id", authenticate, editStudent);
+router.delete("/:id", authenticate, removeStudent);
 router.get("/teacher/:teacherId", getStudentsByTeacher);
 
 module.exports = router;

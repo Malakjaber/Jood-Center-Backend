@@ -15,8 +15,8 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DATEONLY,
         allowNull: false,
       },
-      st_id: {
-        type: DataTypes.STRING(15),
+      class_id: {
+        type: DataTypes.INTEGER,
         allowNull: false,
       },
       teacher_id: {
@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   treatment_plan.associate = function (models) {
-    treatment_plan.belongsTo(models.student, { foreignKey: "st_id" });
+    treatment_plan.belongsTo(models.class, { foreignKey: "class_id" });
     treatment_plan.belongsTo(models.teacher, { foreignKey: "teacher_id" });
   };
 

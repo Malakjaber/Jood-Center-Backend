@@ -180,59 +180,6 @@ const signUp = async (req, res) => {
   }
 };
 
-// const signIn = async (req, res) => {
-//   try {
-//     const { email, password, role } = req.body;
-
-//     let user = {};
-//     const checkConstraints = {
-//       where: { email },
-//     };
-//     switch (role) {
-//       case "parent":
-//         user = await parent.findOne(checkConstraints);
-//         user.id = user.parent_id;
-//         break;
-//       case "teacher":
-//         user = await teacher.findOne(checkConstraints);
-//         user.id = user.teacher_id;
-//         break;
-//       case "co_manager":
-//         user = await co_manager.findOne(checkConstraints);
-//         break;
-//       case "manager":
-//         user = await manager.findOne(checkConstraints);
-//         break;
-//       default:
-//         res.status(400).json({ error: "Role is missing" });
-//         break;
-//     }
-//     if (!user || !(await bcrypt.compare(password, user.password))) {
-//       return res.status(401).json({ error: "Invalid Email or Password" });
-//     }
-
-//     const sessionId = uuidv4();
-
-//     await session.create({
-//       sid: sessionId,
-//       userId: user.id,
-//     });
-
-//     const userdata = {
-//       userId: user.id,
-//       email: user.email,
-//       username: user.username,
-//       sessionId,
-//       role,
-//     };
-
-//     res.json({ message: "success", userdata });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
-
 const signIn = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -276,7 +223,7 @@ const signIn = async (req, res) => {
     const userdata = {
       userId: user.id,
       email: user.email,
-      username: user.username, // Assuming all tables have a username field
+      username: user.username,
       sessionId,
       role,
     };
