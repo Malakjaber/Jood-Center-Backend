@@ -5,6 +5,7 @@ const getAllCoManagers = async (req, res) => {
   try {
     let page = Number(req.query.page) || 1;
     let limit = Number(req.query.limit) || 9;
+    let id = req.query.id;
 
     if (page < 0) {
       page = 1;
@@ -15,7 +16,9 @@ const getAllCoManagers = async (req, res) => {
 
     let search = req.query.search;
     let conditions = {};
-
+    if (id) {
+      conditions.id = id;
+    }
     if (search) {
       search = search.toString();
       conditions.username = {

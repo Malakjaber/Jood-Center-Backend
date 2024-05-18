@@ -1,4 +1,4 @@
-const { class: classes } = require("../models");
+const { class: classes, teacher_class } = require("../models");
 const { sequelize } = require("../models");
 const { models } = sequelize;
 
@@ -60,11 +60,18 @@ const getClassById = async (req, res) => {
 
 const addNewClass = async (req, res) => {
   try {
-    const { name } = req.body;
-
+    const { name, teacher_id } = req.body;
+    console.log(req.body);
     const newClass = await classes.create({
-      name,
+      name: name,
     });
+
+    if (teacher_id) {
+      await teacher_class.create({
+        teacher_id: teacher_id,
+        class_id: newClass.class_id,
+      });
+    }
 
     res.json({
       message: "success",
@@ -78,7 +85,15 @@ const addNewClass = async (req, res) => {
 
 async function getClassesInformation(req, res) {
   try {
+    let class_id = req.query.class_id;
+    let whereCondition = {};
+
+    if (class_id) {
+      whereCondition.class_id = class_id;
+    }
+
     const classesInfo = await models.class.findAll({
+      where: whereCondition,
       include: [
         {
           model: models.student,
@@ -112,18 +127,57 @@ async function getClassesInformation(req, res) {
       raw: true,
       subQuery: false, // This might be necessary to handle limitations in grouping
     });
+
     const data = classesInfo.map((ci) => ({
       class_id: ci["class_id"],
       className: ci["name"],
       studentCount: ci["studentCount"],
       teacherName: ci["teacher_classes.teacher.username"],
     }));
+
     return res.status(200).json({ message: "success", data });
   } catch (error) {
     console.error("Error fetching class information:", error);
     throw error;
   }
 }
+
+const editClass = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, teacher_id } = req.body;
+
+    const classToUpdate = await classes.findByPk(id);
+    if (!classToUpdate) {
+      return res.status(404).json({ error: "Class not found" });
+    }
+
+    await classToUpdate.update({ name });
+
+    if (teacher_id) {
+      // Check if the class already has an assigned teacher
+      const existingTeacherClass = await teacher_class.findOne({
+        where: { class_id: id },
+      });
+
+      if (existingTeacherClass) {
+        // Update the existing teacher assignment
+        await existingTeacherClass.update({ teacher_id });
+      } else {
+        // Create a new teacher assignment
+        await teacher_class.create({
+          teacher_id,
+          class_id: id,
+        });
+      }
+    }
+
+    res.json({ message: "success", class: classToUpdate });
+  } catch (error) {
+    console.log(error);
+    return res.sendStatus(500);
+  }
+};
 
 const removeClass = async (req, res) => {
   try {
@@ -135,7 +189,7 @@ const removeClass = async (req, res) => {
     if (deletedClass === 0) {
       return res.status(404).json({ error: "Class ID not found" });
     }
-    res.json({ message: "success" });
+    return res.status(200).json({ message: "success" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -147,5 +201,6 @@ module.exports = {
   getClassById,
   addNewClass,
   getClassesInformation,
+  editClass,
   removeClass,
 };

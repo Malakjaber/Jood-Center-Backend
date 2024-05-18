@@ -6,6 +6,7 @@ const getAllStudents = async (req, res) => {
   try {
     let page = Number(req.query.page) || 1;
     let limit = Number(req.query.limit) || 9;
+    let parentId = Number(req.query.parentId);
 
     if (page < 0) {
       page = 1;
@@ -16,6 +17,11 @@ const getAllStudents = async (req, res) => {
 
     let search = req.query.search;
     let conditions = {};
+
+    if (parentId) {
+      parentId = parentId.toString();
+      conditions.parent_id = parentId;
+    }
 
     if (search) {
       search = search.toString();
@@ -212,7 +218,9 @@ const getStudentsByTeacher = async (req, res) => {
       });
 
     // Generate classes summary
-    const classes = teacherClasses.map((tc) => tc.class.name);
+    const classes = teacherClasses.map((tc) => {
+      return { name: tc.class.name, class_id: tc.class.class_id };
+    });
 
     // Prepare student data
     const studentsArray = students.map((student) => ({
@@ -222,7 +230,6 @@ const getStudentsByTeacher = async (req, res) => {
 
     res.json({
       message: "success",
-      // totalStudents: totalCount,
       classes,
       students: studentsArray,
       count,

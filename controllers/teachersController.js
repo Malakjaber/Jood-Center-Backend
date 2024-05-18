@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const { sequelize } = require("../models");
 
 const getAllTeachers = async (req, res) => {
@@ -27,10 +28,12 @@ const getAllTeachers = async (req, res) => {
         ["teacher_id", "id"],
         ["username", "username"],
         ["email", "email"],
+        ["phone", "phone"],
+        ["address", "address"],
       ],
       where: conditions,
       order: [["username", "ASC"]],
-      limit: Number(limit),
+      limit: limit,
       offset: (page - 1) * limit,
     });
 

@@ -23,8 +23,6 @@ const getReports = async (req, res) => {
       conditions.date = date;
     }
 
-    console.log("Conditions", conditions);
-
     const data = await sequelize.models.report.findAll({ where: conditions });
     return res.status(200).json({ message: "success", data });
   } catch (error) {

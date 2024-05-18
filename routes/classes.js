@@ -6,12 +6,15 @@ const {
   addNewClass,
   getClassesInformation,
   removeClass,
+  editClass,
 } = require("../controllers/classesController");
+const authenticate = require("../middlewares/authenticate");
 
 router.get("/", getAllClasses);
 router.get("/details", getClassesInformation);
 router.get("/:id", getClassById);
 router.post("/", addNewClass);
-router.delete("/:id", removeClass);
+router.put("/:id", editClass);
+router.delete("/:id", authenticate, removeClass);
 
 module.exports = router;

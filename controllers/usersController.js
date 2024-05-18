@@ -111,33 +111,43 @@ const getUserById = async (req, res) => {
 
 const signUp = async (req, res) => {
   try {
-    const { username, id, email, password, role } = req.body;
-
-    if (!id && role === "parent") {
-      return res.status(400).json({ error: "Parent ID is required" });
-    }
-
-    if (
+    const { username, id, email, password, role, phone, address } = req.body;
+    console.log(req.body);
+    const emailUsed =
       (await parent.findOne({ where: { email } })) ||
       (await teacher.findOne({ where: { email } })) ||
       (await co_manager.findOne({ where: { email } })) ||
-      (await manager.findOne({ where: { email } }))
-    ) {
+      (await manager.findOne({ where: { email } }));
+
+    if (emailUsed) {
       return res.status(400).json({ error: "Email is already used before" });
+    }
+
+    const idUsed =
+      (await parent.findByPk(id)) ||
+      (await teacher.findByPk(id)) ||
+      (await co_manager.findByPk(id)) ||
+      (await manager.findByPk(id));
+
+    if (idUsed) {
+      return res.status(400).json({ error: "ID is already used before" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     let newUser = {};
-    let newUserId = uuidv4();
+    let newUserId = id;
     const userData = {
       username,
       password: hashedPassword,
       email,
+      phone,
+      address,
     };
+
     switch (role) {
       case "parent":
         newUser = await parent.create({
-          parent_id: id,
+          parent_id: newUserId,
           ...userData,
         });
         break;
@@ -164,16 +174,9 @@ const signUp = async (req, res) => {
         break;
     }
 
-    const sessionId = uuidv4();
-    await session.create({
-      sid: sessionId,
-      userId: newUserId,
-    });
-
     res.json({
       message: "success",
       newUser,
-      sessionId,
     });
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error " + error });

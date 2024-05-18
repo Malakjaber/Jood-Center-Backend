@@ -15,12 +15,22 @@ const generateRandomData = () => {
   });
   const randomTeacher = () => ({
     teacher_id: faker.helpers.replaceSymbols("##########"),
+    phone: faker.helpers.replaceSymbols("##########"),
     username: faker.person.fullName(),
     email: faker.internet.email(),
     password: faker.internet.password(),
-    // address: faker.lorem.words({ min: 3, max: 6 }),
+    address: faker.lorem.words({ min: 5, max: 8 }),
   });
-  return { randomStudent, randomTeacher };
+
+  const randomCoManager = () => ({
+    id: faker.helpers.replaceSymbols("##########"),
+    phone: faker.helpers.replaceSymbols("##########"),
+    username: faker.person.fullName(),
+    email: faker.internet.email(),
+    password: faker.internet.password(),
+    address: faker.lorem.words({ min: 5, max: 8 }),
+  });
+  return { randomStudent, randomTeacher, randomCoManager };
 };
 
 const fillStudentsTable = async (req, res) => {
@@ -57,4 +67,18 @@ const fillTeachersTable = async (req, res) => {
   res.json({ message: "success" });
 };
 
-module.exports = { fillStudentsTable, fillTeachersTable, fillClassesTable };
+const fillCoManagersTable = async (req, res) => {
+  const { randomCoManager } = generateRandomData();
+  for (let i = 0; i < 30; i++) {
+    await sequelize.models.co_manager.create(randomCoManager());
+    console.log("============> Iteration: " + i + " <=============");
+  }
+  res.json({ message: "success" });
+};
+
+module.exports = {
+  fillStudentsTable,
+  fillTeachersTable,
+  fillClassesTable,
+  fillCoManagersTable,
+};
