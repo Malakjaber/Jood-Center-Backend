@@ -102,7 +102,7 @@ async function getClassesInformation(req, res) {
         },
         {
           model: models.teacher_class,
-          attributes: [], // No attributes needed from teacher_class directly
+          attributes: ["teacher_id"],
           include: [
             {
               model: models.teacher,
@@ -133,6 +133,7 @@ async function getClassesInformation(req, res) {
       className: ci["name"],
       studentCount: ci["studentCount"],
       teacherName: ci["teacher_classes.teacher.username"],
+      teacher_id: ci["teacher_classes.teacher_id"],
     }));
 
     return res.status(200).json({ message: "success", data });
@@ -147,35 +148,43 @@ const editClass = async (req, res) => {
     const { id } = req.params;
     const { name, teacher_id } = req.body;
 
-    const classToUpdate = await classes.findByPk(id);
+    console.log("Request body: ", req.body);
+
+    const classToUpdate = await sequelize.models.class.findByPk(id);
     if (!classToUpdate) {
       return res.status(404).json({ error: "Class not found" });
     }
 
-    await classToUpdate.update({ name });
+    const updatedClass = await classToUpdate.update({ name });
+    console.log("Updated class: ", updatedClass);
 
     if (teacher_id) {
-      // Check if the class already has an assigned teacher
-      const existingTeacherClass = await teacher_class.findOne({
-        where: { class_id: id },
-      });
+      const existingTeacherClass = await sequelize.models.teacher_class.findOne(
+        {
+          where: { class_id: id },
+        }
+      );
 
       if (existingTeacherClass) {
-        // Update the existing teacher assignment
-        await existingTeacherClass.update({ teacher_id });
-      } else {
-        // Create a new teacher assignment
-        await teacher_class.create({
-          teacher_id,
-          class_id: id,
-        });
+        console.log(
+          "Existing teacher-class relationship found: ",
+          existingTeacherClass
+        );
+        await existingTeacherClass.destroy();
+        console.log("Deleted existing teacher-class relationship");
       }
+
+      const newTeacherClass = await sequelize.models.teacher_class.create({
+        teacher_id,
+        class_id: id,
+      });
+      console.log("Created new teacher-class relationship: ", newTeacherClass);
     }
 
-    res.json({ message: "success", class: classToUpdate });
+    res.json({ message: "success", updatedClass });
   } catch (error) {
-    console.log(error);
-    return res.sendStatus(500);
+    console.error("Error updating class: ", error);
+    return res.status(500).json({ error: "Failed to update class" });
   }
 };
 

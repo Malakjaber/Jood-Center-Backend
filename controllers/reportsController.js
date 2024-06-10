@@ -24,13 +24,36 @@ const getReports = async (req, res) => {
     }
 
     const data = await sequelize.models.report.findAll({ where: conditions });
-    return res.status(200).json({ message: "success", data });
+
+    // Fetch all teacher information
+    const teacherIds = data.map((report) => report.teacher_id);
+    const uniqueTeacherIds = [...new Set(teacherIds)];
+
+    const teachers = await sequelize.models.teacher.findAll({
+      where: { teacher_id: uniqueTeacherIds },
+    });
+
+    // Create a map of teacher IDs to their names
+    const teacherMap = {};
+    teachers.forEach((teacher) => {
+      teacherMap[teacher.teacher_id] = teacher.username;
+    });
+
+    // Attach teacher's name to each report
+    const reportsWithTeacherName = data.map((report) => ({
+      ...report.toJSON(),
+      teacherName: teacherMap[report.teacher_id] || null,
+    }));
+
+    return res.status(200).json({
+      message: "success",
+      data: reportsWithTeacherName,
+    });
   } catch (error) {
     console.log(error);
     return res.sendStatus(500);
   }
 };
-
 async function createReport(content, date, st_id, teacherId) {
   try {
     // First, validate that the student and teacher exist
