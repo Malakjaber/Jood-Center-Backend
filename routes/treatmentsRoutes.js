@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   getTreatments,
   createTreatmentPlan,
+  getStudentTreatmentPlans,
 } = require("../controllers/treatmentsController");
 
 router.get("/", getTreatments);
@@ -16,4 +17,7 @@ router.post("/", async (req, res) => {
     res.status(200).json(result);
   }
 });
+
+router.get("/student-treatments", getStudentTreatmentPlans);
+
 module.exports = router;

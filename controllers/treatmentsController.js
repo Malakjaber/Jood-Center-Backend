@@ -4,7 +4,6 @@ const getTreatments = async (req, res) => {
   try {
     const { id, classId, teacher_id, date } = req.query;
 
-    console.log("req.query", req.query);
     if (!id && !classId && !teacher_id && !date) {
       return res.sendStatus(400);
     }
@@ -76,4 +75,48 @@ async function createTreatmentPlan(content, date, classId, teacherId) {
   }
 }
 
-module.exports = { getTreatments, createTreatmentPlan };
+const getStudentTreatmentPlans = async (req, res) => {
+  try {
+    const { studentId } = req.query;
+
+    if (!studentId) {
+      return res.sendStatus(400);
+    }
+
+    const student = await sequelize.models.student.findByPk(studentId, {
+      include: {
+        model: sequelize.models.class,
+        include: {
+          model: sequelize.models.treatment_plan,
+          include: [
+            {
+              model: sequelize.models.teacher, // Include teacher details directly under treatment_plan
+              attributes: ["username"], // Include only the teacher's username
+            },
+          ],
+        },
+      },
+    });
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    // Flatten the treatment plans and include the class name and teacher name
+    const treatmentPlans = student.class.treatment_plans.map((plan) => ({
+      ...plan.toJSON(),
+      className: student.class.name,
+      teacherName: plan.teacher ? plan.teacher.username : null,
+    }));
+
+    return res.status(200).json({ message: "success", data: treatmentPlans });
+  } catch (error) {
+    console.log(error);
+    return res.sendStatus(500);
+  }
+};
+module.exports = {
+  getTreatments,
+  createTreatmentPlan,
+  getStudentTreatmentPlans,
+};

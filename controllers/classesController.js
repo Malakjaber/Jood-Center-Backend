@@ -148,15 +148,11 @@ const editClass = async (req, res) => {
     const { id } = req.params;
     const { name, teacher_id } = req.body;
 
-    console.log("Request body: ", req.body);
-
     const classToUpdate = await sequelize.models.class.findByPk(id);
     if (!classToUpdate) {
-      return res.status(404).json({ error: "Class not found" });
     }
 
     const updatedClass = await classToUpdate.update({ name });
-    console.log("Updated class: ", updatedClass);
 
     if (teacher_id) {
       const existingTeacherClass = await sequelize.models.teacher_class.findOne(
@@ -166,19 +162,13 @@ const editClass = async (req, res) => {
       );
 
       if (existingTeacherClass) {
-        console.log(
-          "Existing teacher-class relationship found: ",
-          existingTeacherClass
-        );
         await existingTeacherClass.destroy();
-        console.log("Deleted existing teacher-class relationship");
       }
 
-      const newTeacherClass = await sequelize.models.teacher_class.create({
+      await sequelize.models.teacher_class.create({
         teacher_id,
         class_id: id,
       });
-      console.log("Created new teacher-class relationship: ", newTeacherClass);
     }
 
     res.json({ message: "success", updatedClass });
