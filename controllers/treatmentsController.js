@@ -2,7 +2,7 @@ const { sequelize } = require("../models");
 
 const getTreatments = async (req, res) => {
   try {
-    const { id, classId, teacher_id, date } = req.query;
+    const { id, classId, teacher_id, date, limit = 10, page = 1 } = req.query;
 
     if (!id && !classId && !teacher_id && !date) {
       return res.sendStatus(400);
@@ -23,17 +23,39 @@ const getTreatments = async (req, res) => {
       conditions.date = date;
     }
 
-    const data = await sequelize.models.treatment_plan.findOne({
+    const offset = (page - 1) * limit;
+
+    const data = await sequelize.models.treatment_plan.findAndCountAll({
       where: conditions,
       include: [
         {
-          model: sequelize.models.class, // Adjust the model name if necessary
-          attributes: ["name"], // Only include the class name
+          model: sequelize.models.class,
+          attributes: ["name"],
+        },
+        {
+          model: sequelize.models.teacher,
+          attributes: ["username"],
         },
       ],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
     });
 
-    return res.status(200).json({ message: "success", data });
+    const formattedData = data.rows.map((plan) => ({
+      ...plan.toJSON(),
+      className: plan.class.name,
+      teacherName: plan.teacher.username,
+      class: undefined, // Optionally remove the original class object if not needed
+      teacher: undefined, // Optionally remove the original teacher object if not needed
+    }));
+
+    return res.status(200).json({
+      message: "success",
+      data: formattedData,
+      total: data.count,
+      pages: Math.ceil(data.count / limit),
+      currentPage: parseInt(page),
+    });
   } catch (error) {
     console.log(error);
     return res.sendStatus(500);
@@ -77,7 +99,7 @@ async function createTreatmentPlan(content, date, classId, teacherId) {
 
 const getStudentTreatmentPlans = async (req, res) => {
   try {
-    const { studentId } = req.query;
+    const { studentId, limit = 10, page = 1 } = req.query;
 
     if (!studentId) {
       return res.sendStatus(400);
@@ -91,7 +113,7 @@ const getStudentTreatmentPlans = async (req, res) => {
           include: [
             {
               model: sequelize.models.teacher, // Include teacher details directly under treatment_plan
-              attributes: ["username"], // Include only the teacher's username
+              attributes: ["username"],
             },
           ],
         },
@@ -109,7 +131,20 @@ const getStudentTreatmentPlans = async (req, res) => {
       teacherName: plan.teacher ? plan.teacher.username : null,
     }));
 
-    return res.status(200).json({ message: "success", data: treatmentPlans });
+    const totalPlans = treatmentPlans.length;
+    const offset = (page - 1) * limit;
+    const paginatedPlans = treatmentPlans.slice(
+      offset,
+      offset + parseInt(limit)
+    );
+
+    return res.status(200).json({
+      message: "success",
+      data: paginatedPlans,
+      total: totalPlans,
+      pages: Math.ceil(totalPlans / limit),
+      currentPage: parseInt(page),
+    });
   } catch (error) {
     console.log(error);
     return res.sendStatus(500);

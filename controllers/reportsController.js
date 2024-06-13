@@ -2,7 +2,7 @@ const { sequelize } = require("../models");
 
 const getReports = async (req, res) => {
   try {
-    const { id, st_id, teacher_id, date } = req.query;
+    const { id, st_id, teacher_id, date, limit = 10, page = 1 } = req.query;
 
     if (!id && !st_id && !teacher_id && !date) {
       return res.sendStatus(400);
@@ -23,10 +23,16 @@ const getReports = async (req, res) => {
       conditions.date = date;
     }
 
-    const data = await sequelize.models.report.findAll({ where: conditions });
+    const offset = (page - 1) * limit;
+
+    const data = await sequelize.models.report.findAndCountAll({
+      where: conditions,
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+    });
 
     // Fetch all teacher information
-    const teacherIds = data.map((report) => report.teacher_id);
+    const teacherIds = data.rows.map((report) => report.teacher_id);
     const uniqueTeacherIds = [...new Set(teacherIds)];
 
     const teachers = await sequelize.models.teacher.findAll({
@@ -40,7 +46,7 @@ const getReports = async (req, res) => {
     });
 
     // Attach teacher's name to each report
-    const reportsWithTeacherName = data.map((report) => ({
+    const reportsWithTeacherName = data.rows.map((report) => ({
       ...report.toJSON(),
       teacherName: teacherMap[report.teacher_id] || null,
     }));
@@ -48,12 +54,16 @@ const getReports = async (req, res) => {
     return res.status(200).json({
       message: "success",
       data: reportsWithTeacherName,
+      total: data.count,
+      pages: Math.ceil(data.count / limit),
+      currentPage: parseInt(page),
     });
   } catch (error) {
     console.log(error);
     return res.sendStatus(500);
   }
 };
+
 async function createReport(content, date, st_id, teacherId) {
   try {
     // First, validate that the student and teacher exist
