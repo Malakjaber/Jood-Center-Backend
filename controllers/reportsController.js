@@ -45,15 +45,30 @@ const getReports = async (req, res) => {
       teacherMap[teacher.teacher_id] = teacher.username;
     });
 
-    // Attach teacher's name to each report
-    const reportsWithTeacherName = data.rows.map((report) => ({
+    // Fetch all student information
+    const studentIds = data.rows.map((report) => report.st_id);
+    const uniqueStudentIds = [...new Set(studentIds)];
+
+    const students = await sequelize.models.student.findAll({
+      where: { st_id: uniqueStudentIds },
+    });
+
+    // Create a map of student IDs to their names
+    const studentMap = {};
+    students.forEach((student) => {
+      studentMap[student.st_id] = student.name;
+    });
+
+    // Attach teacher's name and student's name to each report
+    const reportsWithNames = data.rows.map((report) => ({
       ...report.toJSON(),
       teacherName: teacherMap[report.teacher_id] || null,
+      studentName: studentMap[report.st_id] || null,
     }));
 
     return res.status(200).json({
       message: "success",
-      data: reportsWithTeacherName,
+      data: reportsWithNames,
       total: data.count,
       pages: Math.ceil(data.count / limit),
       currentPage: parseInt(page),
